@@ -26,7 +26,7 @@
       <NavigationView.PaneFooter>
         <StackPanel Margin="24,20,20,28" Spacing="10">
           <StackPanel Orientation="Horizontal" Spacing="7"><Ellipse Width="6" Height="6" Fill="{ThemeResource AccentTextBrush}" VerticalAlignment="Center" /><TextBlock Text="仅红外 · 全程本地" FontSize="12" Foreground="{ThemeResource MutedBrush}" /></StackPanel>
-          <TextBlock Text="GlanceNext  /  0.1.1" FontSize="11" Foreground="{ThemeResource MutedBrush}" />
+          <TextBlock Text="GlanceNext  /  0.1.2" FontSize="11" Foreground="{ThemeResource MutedBrush}" />
         </StackPanel>
       </NavigationView.PaneFooter>
       <ScrollViewer x:Name="PageScroller" Background="{ThemeResource PageBrush}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -100,7 +100,7 @@
               <TextBlock Text="{Binding DeviceFormat}" Style="{StaticResource BodyMuted}" /><TextBlock Text="{Binding ValidationText}" Foreground="{ThemeResource AccentTextBrush}" />
             </StackPanel></Border>
             <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="14"><TextBlock Text="01 / 校准注意力" Style="{StaticResource SectionTitle}" /><TextBlock Text="{Binding CalibrationInstruction}" Style="{StaticResource BodyMuted}" /><Button Content="{Binding CalibrationButtonText}" Click="CalibrateClicked" IsEnabled="{Binding CanCalibrate}" HorizontalAlignment="Left" /><TextBlock Text="{Binding CalibrationSummary}" Foreground="{ThemeResource AccentTextBrush}" /></StackPanel></Border>
-            <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="14"><TextBlock Text="02 / 确认提醒方向" Style="{StaticResource SectionTitle}" /><TextBlock Text="{Binding DirectionInstruction}" Style="{StaticResource BodyMuted}" /><Button Content="确认左右方向" Click="DirectionClicked" IsEnabled="{Binding CanCalibrateDirection}" HorizontalAlignment="Left" /><TextBlock Text="{Binding DirectionSummary}" Foreground="{ThemeResource AccentTextBrush}" /></StackPanel></Border>
+            <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="14"><TextBlock Text="02 / 确认提醒方向" Style="{StaticResource SectionTitle}" /><TextBlock Text="{Binding DirectionInstruction}" Style="{StaticResource BodyMuted}" /><StackPanel Orientation="Horizontal" Spacing="12"><Button Content="确认左右方向" Click="DirectionClicked" IsEnabled="{Binding CanCalibrateDirection}" /><Button Content="交换左右" Click="SwapDirectionClicked" IsEnabled="{Binding CanSwapDirection}" AutomationProperties.Name="交换旁观者提醒的左右方向" /></StackPanel><TextBlock Text="若提醒与实际左右相反，点击「交换左右」即可纠正，无需重做头部朝向校准。" Style="{StaticResource BodyMuted}" /><TextBlock Text="{Binding DirectionSummary}" Foreground="{ThemeResource AccentTextBrush}" TextWrapping="Wrap" /></StackPanel></Border>
             <Border Style="{StaticResource CardStyle}"><StackPanel Spacing="14"><TextBlock Text="03 / 实机验证" Style="{StaticResource SectionTitle}" /><TextBlock Text="分别观察正常光线、弱光、戴眼镜和转头场景。完成相应观察后，勾选你已确认可靠的功能。勾选不会自动开启保护。" Style="{StaticResource BodyMuted}" />
               <CheckBox IsChecked="{Binding PresenceVerified, Mode=TwoWay}" IsEnabled="{Binding CanVerifyPresence}"><TextBlock Text="已确认在座能检测到人脸，离席后人脸消失" TextWrapping="Wrap" /></CheckBox>
               <CheckBox IsChecked="{Binding BystanderVerified, Mode=TwoWay}" IsEnabled="{Binding CanVerifyBystander}"><TextBlock Text="已确认第二个人进入时能稳定检测到两个人" TextWrapping="Wrap" /></CheckBox>

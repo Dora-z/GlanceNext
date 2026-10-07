@@ -149,8 +149,10 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     public string ReadinessSummary => stable ? "红外数据稳定" : lifecycle.State switch
     { DetectionRunState.Reconnecting => "正在重新连接", DetectionRunState.Starting => "正在连接红外设备", DetectionRunState.Locked => "会话已锁定", DetectionRunState.Sleeping => "设备休眠中", DetectionRunState.Validating => "正在验证红外数据", DetectionRunState.Faulted => "红外连接失败", DetectionRunState.Paused => "检测已暂停", DetectionRunState.Stopped => "摄像头已释放", _ => "设备尚未就绪" };
     public string DirectionInstruction { get => directionInstruction; private set => Set(ref directionInstruction, value); }
-    public string DirectionSummary => Settings.CameraDirectionVerified ? "左右方向已确认 · 提醒跟随旁观者方位" : "尚未确认左右 · 暂时使用顶部居中提醒";
+    public string DirectionSummary => Settings.CameraDirectionVerified ?
+        $"左右方向已确认 · 画面左侧对应你的{(Settings.CameraLeftIsUserLeft ? "左" : "右")}侧" : "尚未确认左右 · 暂时使用顶部居中提醒";
     public bool CanCalibrateDirection => stable && lastFaceCount == 1;
+    public bool CanSwapDirection => !disposed && !sessionBlocked && !IsBusy && Settings.CameraDirectionVerified && !directionCalibration.IsCollecting;
     public string CalibrationSummary => Settings.Calibration.IsComplete ? $"已校准 · 转头阈值 {Settings.Calibration.AwayYawThreshold:F0}°" : "尚未校准";
     public string LocalDataPath => store.DirectoryPath;
     public bool PresenceEnabled
@@ -533,6 +535,13 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
         Save();
         RefreshComputed();
     }
+    public void SwapCameraDirection()
+    {
+        if (!CanSwapDirection) return;
+        Settings.CameraLeftIsUserLeft = !Settings.CameraLeftIsUserLeft;
+        DirectionInstruction = "已交换提醒左右。请让旁观者分别从你实际的左、右两侧进入，确认卡片位置；如仍反向，可再次交换。";
+        ChangedSetting();
+    }
     private void CollectCalibration(FaceObservation face, int count)
     {
         if (calibrationStep is not (1 or 3))
@@ -624,7 +633,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IAsyncDisposable
     }
     private void RefreshComputed()
     {
-        foreach (var property in new[] { nameof(IsBusy), nameof(CanSelectDevice), nameof(IsRunning), nameof(IsPaused), nameof(IsStable), nameof(CanStart), nameof(CanStop), nameof(CanCalibrate), nameof(CanVerifyPresence), nameof(CanVerifyBystander), nameof(CanVerifyAttention), nameof(CanEnablePresence), nameof(CanEnableBystander), nameof(CanEnableAttention), nameof(CanToggleDetection), nameof(PauseLabel), nameof(CalibrationButtonText), nameof(EnabledSummary), nameof(ReadinessSummary), nameof(CalibrationSummary), nameof(PresenceEnabled), nameof(BystanderEnabled), nameof(AttentionEnabled), nameof(PresenceVerified), nameof(BystanderVerified), nameof(AttentionVerified), nameof(ProtectionSummary), nameof(StartButtonText), nameof(DirectionSummary), nameof(CanCalibrateDirection) })
+        foreach (var property in new[] { nameof(IsBusy), nameof(CanSelectDevice), nameof(IsRunning), nameof(IsPaused), nameof(IsStable), nameof(CanStart), nameof(CanStop), nameof(CanCalibrate), nameof(CanVerifyPresence), nameof(CanVerifyBystander), nameof(CanVerifyAttention), nameof(CanEnablePresence), nameof(CanEnableBystander), nameof(CanEnableAttention), nameof(CanToggleDetection), nameof(PauseLabel), nameof(CalibrationButtonText), nameof(EnabledSummary), nameof(ReadinessSummary), nameof(CalibrationSummary), nameof(PresenceEnabled), nameof(BystanderEnabled), nameof(AttentionEnabled), nameof(PresenceVerified), nameof(BystanderVerified), nameof(AttentionVerified), nameof(ProtectionSummary), nameof(StartButtonText), nameof(DirectionSummary), nameof(CanCalibrateDirection), nameof(CanSwapDirection) })
             OnChanged(property);
     }
     private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)

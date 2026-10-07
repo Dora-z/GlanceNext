@@ -6,6 +6,7 @@ public sealed class BystanderTracker
     private FaceObservation? primary, singleCandidate;
     private TimeSpan? lastFrame, lastSeen, singleSince, directionSince;
     private BystanderDirection direction, candidateDirection;
+    private bool? cameraMapping;
     private static double CenterX(FaceObservation face) => face.X + face.Width / 2;
     private static double CenterY(FaceObservation face) => face.Y + face.Height / 2;
 
@@ -14,6 +15,7 @@ public sealed class BystanderTracker
         primary = singleCandidate = null;
         lastFrame = lastSeen = singleSince = directionSince = null;
         direction = candidateDirection = BystanderDirection.Unknown;
+        cameraMapping = null;
     }
 
     public DetectionResult Observe(DetectionResult result, AppSettings settings)
@@ -21,6 +23,15 @@ public sealed class BystanderTracker
         if (!result.IsValid) { Reset(); return result with { TrackedPrimaryFace = null, BystanderDirection = BystanderDirection.Unknown }; }
         if (lastFrame is { } previous && (result.Timestamp < previous || result.Timestamp - previous > TimeSpan.FromSeconds(2)))
             Reset();
+        bool? mapping = settings.CameraDirectionVerified ? settings.CameraLeftIsUserLeft : null;
+        if (mapping != cameraMapping)
+        {
+            // A corrected mapping must not retain the old side or its debounce timer.
+            // Keep the positional anchor so an existing observer cannot become the owner.
+            direction = candidateDirection = BystanderDirection.Unknown;
+            directionSince = null;
+            cameraMapping = mapping;
+        }
         lastFrame = result.Timestamp;
         var faces = result.Faces;
         var ownerIndex = -1;

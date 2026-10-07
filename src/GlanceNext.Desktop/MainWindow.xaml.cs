@@ -99,6 +99,7 @@ public sealed partial class MainWindow : Window
     private async void EmergencyClicked(object sender, RoutedEventArgs e) => await viewModel.EmergencyAsync();
     private void CalibrateClicked(object sender, RoutedEventArgs e) => viewModel.BeginCalibration();
     private void DirectionClicked(object sender, RoutedEventArgs e) => viewModel.BeginDirectionCalibration();
+    private void SwapDirectionClicked(object sender, RoutedEventArgs e) => viewModel.SwapCameraDirection();
     private void OpenDataClicked(object sender, RoutedEventArgs e)
     {
         Directory.CreateDirectory(store.DirectoryPath);

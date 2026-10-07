@@ -201,6 +201,35 @@ Test("Mirrored camera mapping reverses image coordinates", () =>
     tracker.Observe(Located(1.2, Positioned(0.5), Positioned(0.8)), settings);
     Equal(BystanderDirection.Left, tracker.Observe(Located(1.8, Positioned(0.5), Positioned(0.8)), settings).BystanderDirection);
 });
+Test("Swapping a live mapping clears the old side while retaining the primary", () =>
+{
+    foreach (var mirror in new[] { false, true })
+    {
+        var tracker = new BystanderTracker(); var settings = DirectionSettings(mirror); Anchor(tracker, settings);
+        tracker.Observe(Located(1.2, Positioned(0.2), Positioned(0.5)), settings);
+        Equal(mirror ? BystanderDirection.Right : BystanderDirection.Left,
+            tracker.Observe(Located(1.8, Positioned(0.2), Positioned(0.5)), settings).BystanderDirection);
+        settings.CameraLeftIsUserLeft = !settings.CameraLeftIsUserLeft;
+        var changed = tracker.Observe(Located(2, Positioned(0.2), Positioned(0.5)), settings);
+        Equal(BystanderDirection.Unknown, changed.BystanderDirection);
+        Equal(Positioned(0.5), changed.PrimaryFace!.Value);
+        Equal(BystanderDirection.Unknown, tracker.Observe(Located(2.4, Positioned(0.2), Positioned(0.5)), settings).BystanderDirection);
+        Equal(mirror ? BystanderDirection.Left : BystanderDirection.Right,
+            tracker.Observe(Located(2.6, Positioned(0.2), Positioned(0.5)), settings).BystanderDirection);
+    }
+});
+Test("Direction verification changes discard a cached side during disappearance", () =>
+{
+    var tracker = new BystanderTracker(); var settings = DirectionSettings(); Anchor(tracker, settings);
+    tracker.Observe(Located(1.2, Positioned(0.2), Positioned(0.5)), settings);
+    Equal(BystanderDirection.Left, tracker.Observe(Located(1.8, Positioned(0.2), Positioned(0.5)), settings).BystanderDirection);
+    settings.CameraDirectionVerified = false;
+    Equal(BystanderDirection.Unknown, tracker.Observe(Located(2, Positioned(0.5)), settings).BystanderDirection);
+    settings.CameraDirectionVerified = true;
+    settings.CameraLeftIsUserLeft = false;
+    Equal(BystanderDirection.Unknown, tracker.Observe(Located(2.2, Positioned(0.2), Positioned(0.5)), settings).BystanderDirection);
+    Equal(BystanderDirection.Right, tracker.Observe(Located(2.8, Positioned(0.2), Positioned(0.5)), settings).BystanderDirection);
+});
 Test("A closer and larger observer does not replace the established user", () =>
 {
     var tracker = new BystanderTracker(); var settings = DirectionSettings(); Anchor(tracker, settings);
