@@ -3,6 +3,7 @@ name: Windows x64 build
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
@@ -11,12 +12,14 @@ permissions:
 
 concurrency:
   group: build-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
     runs-on: windows-2025
     timeout-minutes: 30
+    outputs:
+      version: ${{ steps.package.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -40,3 +43,92 @@ jobs:
           foreach ($path in $required) {
             if (-not (Test-Path -LiteralPath $path)) { throw "Missing published resource: $path" }
           }
+      - name: Package release with licenses and checksum
+        id: package
+        shell: pwsh
+        env:
+          BUILD_REF_TYPE: ${{ github.ref_type }}
+          BUILD_REF_NAME: ${{ github.ref_name }}
+        run: |
+          [xml]$project = Get-Content 'src/GlanceNext.Desktop/GlanceNext.Desktop.csproj'
+          $version = [string]$project.Project.PropertyGroup.Version
+          if ($env:BUILD_REF_TYPE -eq 'tag' -and $env:BUILD_REF_NAME -ne "v$version") {
+            throw "Version tag must match project version: v$version"
+          }
+          ./scripts/package-release.ps1 -Version $version
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - name: Upload release package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: windows-x64-release
+          path: dist/releases/*
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+  release:
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - name: Download release package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: windows-x64-release
+          path: release-assets
+      - name: Publish to GitHub Releases
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ needs.build.outputs.version }}
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
+          RELEASE_REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          cd release-assets
+          sha256sum --check "GlanceNext-${RELEASE_VERSION}-windows-x64.zip.sha256"
+          if [[ "$RELEASE_REF_TYPE" == "tag" ]]; then
+            tag="$RELEASE_REF_NAME"
+            title="GlanceNext $tag"
+            channel="正式版"
+          else
+            tag="dev"
+            title="GlanceNext 开发版 ($RELEASE_VERSION)"
+            channel="开发版，自动跟随 main 分支更新"
+          fi
+          cat > release-notes.md <<EOF
+          $channel
+
+          下载 \`GlanceNext-${RELEASE_VERSION}-windows-x64.zip\`，完整解压后运行 \`GlanceNext/GlanceNext.Desktop.exe\`。
+          Windows 11 x64；程序自包含，需驱动暴露独立红外摄像头。所有保护功能默认关闭，首次使用先完成诊断与校准。
+          压缩包附带许可证、第三方声明及构建信息；同名 \`.sha256\` 文件用于校验下载完整性。
+
+          源码提交：$GITHUB_SHA
+          自动构建：https://github.com/$GH_REPO/actions/runs/$GITHUB_RUN_ID
+          EOF
+          if gh release view "$tag" --json tagName > /dev/null 2>&1; then
+            if [[ "$tag" == "dev" ]]; then
+              gh api "repos/$GH_REPO/git/refs/tags/dev" --method PATCH -f sha="$GITHUB_SHA" -F force=true > /dev/null
+            fi
+          elif [[ "$tag" == "dev" ]]; then
+            gh release create "$tag" --target "$GITHUB_SHA" --title "$title" --notes-file release-notes.md --prerelease --draft
+          else
+            gh release create "$tag" --verify-tag --title "$title" --notes-file release-notes.md --draft
+          fi
+          gh release upload "$tag" "GlanceNext-${RELEASE_VERSION}-windows-x64.zip" "GlanceNext-${RELEASE_VERSION}-windows-x64.zip.sha256" --clobber
+          if [[ "$tag" == "dev" ]]; then
+            # Remove packages from an older project version after the new pair is uploaded.
+            gh release view "$tag" --json assets --jq '.assets[].name' |
+              while IFS= read -r asset; do
+                if [[ "$asset" == GlanceNext-*-windows-x64.zip* && "$asset" != "GlanceNext-${RELEASE_VERSION}-windows-x64.zip" && "$asset" != "GlanceNext-${RELEASE_VERSION}-windows-x64.zip.sha256" ]]; then
+                  gh release delete-asset "$tag" "$asset" --yes
+                fi
+              done
+            gh release edit "$tag" --title "$title" --notes-file release-notes.md --draft=false --prerelease --latest=false
+          else
+            gh release edit "$tag" --title "$title" --notes-file release-notes.md --draft=false --prerelease=false --latest
+          fi

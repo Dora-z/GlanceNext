@@ -15,6 +15,12 @@
 
 预览使用模拟检测状态，不包含摄像头画面。
 
+## 下载与安装
+
+从 [Releases](https://github.com/Dora-z/GlanceNext/releases) 下载 `GlanceNext-版本号-windows-x64.zip`，完整解压后运行 `GlanceNext/GlanceNext.Desktop.exe`。无需另外安装 .NET 或 Windows App Runtime；首次使用仍需完成红外设备诊断与校准。
+
+正式版本以 `v版本号` 标记；「开发版」自动跟随 `main` 分支更新，可能包含尚未完成实机验收的改动。每个包附带 `.sha256` 下载校验文件、许可证及源码提交信息。
+
 ## 从源码开始
 
 需要 Windows 11 x64、Git，以及驱动暴露的独立红外数据源；支持 Windows Hello 不代表一定能供此应用独立取流。应用只使用红外摄像头，需先完成设备诊断与校准。
@@ -27,7 +33,16 @@ cd GlanceNext
 .\scripts\run.ps1
 ```
 
-GitHub Actions 在 Windows runner 上运行规则测试、构建自包含 x64 目录并检查 WinUI 资源。摄像头、Windows 登录恢复及实际 DPI 的验收需在本机执行，详见下文。
+GitHub Actions 在 Windows runner 上运行规则测试、构建自包含 x64 目录并检查 WinUI 资源。构建成功后，`main` 推送及在 `main` 手动运行工作流会自动更新 Releases 的开发版；推送与项目版本一致的 `v版本号` 标签会发布正式版。Pull Request 只提供构建产物，不发布 Release。摄像头、Windows 登录恢复及实际 DPI 的验收需在本机执行，详见下文。
+
+维护者发布正式版：先修改 `.csproj` 中的 `Version` 并提交源码，再推送匹配的版本标签。例如项目版本为 `0.1.2` 时：
+
+```powershell
+git tag v0.1.2
+git push origin v0.1.2
+```
+
+重复运行工作流会替换同名下载文件。新开发版上传完成后，自动移除开发版中旧版本的下载文件；正式版本保留各自标签。构建步骤仅使用只读权限，上传 Release 的独立作业使用 GitHub 自动提供的令牌，无需配置个人访问令牌。
 
 ## 运行
 
