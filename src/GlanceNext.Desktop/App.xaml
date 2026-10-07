@@ -1,0 +1,48 @@
+<Application x:Class="GlanceNext.Desktop.App" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries><XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" /></ResourceDictionary.MergedDictionaries>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="PageBrush" Color="#F5F7F7" />
+          <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="CardBorderBrush" Color="#E1E8E7" />
+          <SolidColorBrush x:Key="HeroBrush" Color="#E0F3EF" />
+          <SolidColorBrush x:Key="AccentSoftBrush" Color="#E3F4EF" />
+          <SolidColorBrush x:Key="AccentTextBrush" Color="#087D71" />
+          <SolidColorBrush x:Key="MutedBrush" Color="#687974" />
+          <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#008D7E" />
+          <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#007D70" />
+          <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#006F64" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="PageBrush" Color="#121A1C" />
+          <SolidColorBrush x:Key="CardBrush" Color="#1C2729" />
+          <SolidColorBrush x:Key="CardBorderBrush" Color="#304042" />
+          <SolidColorBrush x:Key="HeroBrush" Color="#173C38" />
+          <SolidColorBrush x:Key="AccentSoftBrush" Color="#233F3B" />
+          <SolidColorBrush x:Key="AccentTextBrush" Color="#79DEC8" />
+          <SolidColorBrush x:Key="MutedBrush" Color="#A0B4B0" />
+          <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#79DEC8" />
+          <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#65CBB5" />
+          <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#55B7A2" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <Color x:Key="SystemAccentColor">#009D8C</Color>
+      <SolidColorBrush x:Key="SystemAccentColorBrush" Color="#009D8C" />
+      <Style x:Key="CardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource CardBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="16" /><Setter Property="Padding" Value="24" />
+      </Style>
+      <Style x:Key="SectionTitle" TargetType="TextBlock"><Setter Property="FontSize" Value="18" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+      <Style x:Key="BodyMuted" TargetType="TextBlock"><Setter Property="Foreground" Value="{ThemeResource MutedBrush}" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="FontSize" Value="13" /><Setter Property="LineHeight" Value="21" /></Style>
+      <Style x:Key="AccentIcon" TargetType="FontIcon"><Setter Property="FontSize" Value="22" /><Setter Property="Foreground" Value="{ThemeResource AccentTextBrush}" /></Style>
+      <Style x:Key="GlanceAccentButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="{ThemeResource AccentTextBrush}" />
+        <Setter Property="Foreground" Value="{ThemeResource CardBrush}" />
+        <Setter Property="CornerRadius" Value="8" />
+      </Style>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

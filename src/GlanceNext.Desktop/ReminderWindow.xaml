@@ -1,0 +1,18 @@
+<Window x:Class="GlanceNext.Desktop.ReminderWindow"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Border x:Name="Card" Background="{ThemeResource CardBrush}" BorderBrush="{ThemeResource CardBorderBrush}"
+          BorderThickness="1" CornerRadius="16" IsHitTestVisible="False" Padding="20,17">
+    <Grid ColumnSpacing="14">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="40"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+      <Border Background="{ThemeResource AccentSoftBrush}" CornerRadius="12" Width="40" Height="44" VerticalAlignment="Center">
+        <FontIcon Glyph="&#xEA18;" FontFamily="Segoe Fluent Icons" FontSize="23" Foreground="{ThemeResource AccentTextBrush}"/>
+      </Border>
+      <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
+        <TextBlock Text="GLANCENEXT  /  隐私提醒" FontSize="10" FontWeight="SemiBold" CharacterSpacing="65" Foreground="{ThemeResource AccentTextBrush}"/>
+        <TextBlock x:Name="AlertTitle" Text="检测到旁观者" FontSize="17" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+        <TextBlock Text="请留意屏幕上的敏感内容" FontSize="12" Foreground="{ThemeResource MutedBrush}"/>
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>
